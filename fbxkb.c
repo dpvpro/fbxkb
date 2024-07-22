@@ -1,7 +1,3 @@
-
-
-
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -96,7 +92,7 @@ flag_menu_create()
     GdkPixbuf *flag;
     GtkWidget *mi, *img;
     //static GString *s = NULL;;
-    
+
     ENTER;
     flag_menu =  gtk_menu_new();
     for (i = 0; i < ngroups; i++) {
@@ -127,7 +123,7 @@ flag_menu_activated(GtkWidget *widget, gpointer data)
 {
     int i;
 
-    ENTER;    
+    ENTER;
     i = GPOINTER_TO_INT(data);
     DBG("asking %d group\n", i);
     XkbLockGroup(dpy, XkbUseCoreKbd, i);
@@ -138,7 +134,7 @@ static void
 app_menu_create()
 {
     GtkWidget *mi;
-    
+
     ENTER;
     app_menu =  gtk_menu_new();
 
@@ -147,7 +143,7 @@ app_menu_create()
     gtk_menu_shell_append (GTK_MENU_SHELL (app_menu), mi);
     gtk_widget_show (mi);
 
-    
+
     mi = gtk_menu_item_new ();
     gtk_widget_show (mi);
     gtk_menu_shell_append (GTK_MENU_SHELL (app_menu), mi);
@@ -159,7 +155,7 @@ app_menu_create()
     gtk_widget_show (mi);
     RET();
 
-} 
+}
 
 static void
 app_menu_about(GtkWidget *widget, gpointer data)
@@ -184,19 +180,19 @@ app_menu_about(GtkWidget *widget, gpointer data)
 static void
 app_menu_exit(GtkWidget *widget, gpointer data)
 {
-    ENTER;    
+    ENTER;
     exit(0);
     RET();
 }
 
 
-static void docklet_embedded(GtkWidget *widget, void *data) 
+static void docklet_embedded(GtkWidget *widget, void *data)
 {
     ENTER;
     RET();
 }
 
-static void docklet_destroyed(GtkWidget *widget, void *data) 
+static void docklet_destroyed(GtkWidget *widget, void *data)
 {
     ENTER;
     //g_object_unref(G_OBJECT(docklet));
@@ -206,7 +202,7 @@ static void docklet_destroyed(GtkWidget *widget, void *data)
 }
 
 
-void docklet_clicked(GtkWidget *button, GdkEventButton *event, void *data) 
+void docklet_clicked(GtkWidget *button, GdkEventButton *event, void *data)
 {
     //GtkWidget *menu;
     ENTER;
@@ -227,26 +223,26 @@ void docklet_clicked(GtkWidget *button, GdkEventButton *event, void *data)
     RET();
 }
 
-static int 
-docklet_create() 
+static int
+docklet_create()
 {
     GtkWidget *box;
-    
+
     ENTER;
     docklet = (GtkWidget*)egg_tray_icon_new("fbxkb");
     box     = gtk_event_box_new();
-    image   = gtk_image_new(); 
+    image   = gtk_image_new();
     //image   = gtk_image_new();
     g_signal_connect(G_OBJECT(docklet), "embedded", G_CALLBACK(docklet_embedded), NULL);
     g_signal_connect(G_OBJECT(docklet), "destroy", G_CALLBACK(docklet_destroyed), NULL);
     g_signal_connect(G_OBJECT(box), "button-press-event", G_CALLBACK(docklet_clicked), NULL);
 
     gtk_container_set_border_width(GTK_CONTAINER(box), 0);
-    
+
     gtk_container_add(GTK_CONTAINER(box), image);
     gtk_container_add(GTK_CONTAINER(docklet), box);
     gtk_widget_show_all(GTK_WIDGET(docklet));
-    
+
     RET(1);
 }
 
@@ -260,21 +256,21 @@ my_str_equal (gchar *a, gchar *b)
     return  (a[0] == b[0] && a[1] == b[1]);
 }
 
-    
+
 static GdkPixbuf *
 sym2flag(char *sym)
 {
     GdkPixbuf *flag;
     static GString *s = NULL;
     char tmp[3];
-    
+
     ENTER;
     g_assert(sym != NULL && strlen(sym) > 1);
     flag = g_hash_table_lookup(sym2pix, sym);
     if (flag)
         RET(flag);
 
-    if (!s) 
+    if (!s)
         s = g_string_new(IMGPREFIX "tt.png");
     s->str[s->len-6] = sym[0];
     s->str[s->len-5] = sym[1];
@@ -333,7 +329,7 @@ read_kbd_description()
     cur_group = xkb_state.group;
     DBG("cur_group = %d ngroups = %d\n", cur_group, ngroups);
     g_assert(cur_group < ngroups);
-    
+
     if (XkbGetNames(dpy, XkbSymbolsNameMask, kbd_desc_ptr) != Success) {
         ERR("can't get Xkb symbol description\n");
         goto out;
@@ -347,7 +343,7 @@ read_kbd_description()
     if (sym_name_atom != None) {
         char *sym_name, *tmp, *tok;
         int no;
-        
+
         sym_name = XGetAtomName(dpy, sym_name_atom);
         if (!sym_name)
             goto out;
@@ -361,7 +357,7 @@ read_kbd_description()
             DBG("tok=%s\n", tok);
             tmp = strchr(tok, ':');
             if (tmp) {
-                if (sscanf(tmp+1, "%d", &no) != 1) 
+                if (sscanf(tmp+1, "%d", &no) != 1)
                     ERR("can't read kbd number\n");
                 no--;
                 *tmp = 0;
@@ -374,14 +370,15 @@ read_kbd_description()
             DBG("map=%s no=%d\n", tok, no);
             if (!strcmp(tok, "pc") || !strcmp(tok, "group"))
                 continue;
-          
+
             g_assert((no >= 0) && (no < ngroups));
             if (group2info[no].sym != NULL) {
                 ERR("xkb group #%d is already defined\n", no);
+            } else {
+                group2info[no].sym = g_strdup(tok);
+                group2info[no].flag = sym2flag(tok);
+                group2info[no].name = XGetAtomName(dpy, kbd_desc_ptr->names->groups[no]);
             }
-            group2info[no].sym = g_strdup(tok);
-            group2info[no].flag = sym2flag(tok);
-            group2info[no].name = XGetAtomName(dpy, kbd_desc_ptr->names->groups[no]);           
         }
         XFree(sym_name);
     }
@@ -427,7 +424,7 @@ filter( XEvent *xev, GdkEvent *event, gpointer data)
     ENTER;
     if (!active)
         RET(GDK_FILTER_CONTINUE);
-   
+
     if (xev->type ==  xkb_event_type) {
         XkbEvent *xkbev = (XkbEvent *) xev;
         DBG("XkbTypeEvent %d \n", xkbev->any.xkb_type);
@@ -436,13 +433,13 @@ filter( XEvent *xev, GdkEvent *event, gpointer data)
             cur_group = xkbev->state.group;
             if (cur_group < ngroups)
                 update_flag(cur_group);
-        } else if (xkbev->any.xkb_type == XkbNewKeyboardNotify) {         
+        } else if (xkbev->any.xkb_type == XkbNewKeyboardNotify) {
             DBG("XkbNewKeyboardNotify\n");
             read_kbd_description();
             //cur_group = 0;
             update_flag(cur_group);
             flag_menu_destroy();
-            flag_menu_create();  
+            flag_menu_create();
         }
         RET(GDK_FILTER_REMOVE);
     }
@@ -456,7 +453,7 @@ init()
 
     ENTER;
     sym2pix  = g_hash_table_new(g_str_hash, (GEqualFunc) my_str_equal);
-    dpy = GDK_DISPLAY();
+    dpy = gdk_x11_get_default_xdisplay();
     a_XKB_RULES_NAMES = XInternAtom(dpy, "_XKB_RULES_NAMES", False);
     if (a_XKB_RULES_NAMES == None)
         ERR("_XKB_RULES_NAMES - can't get this atom\n");
@@ -515,7 +512,6 @@ main(int argc, char *argv[], char *env[])
 {
     ENTER;
     setlocale(LC_CTYPE, "");
-    gtk_set_locale();
     gtk_init(&argc, &argv);
     XSetLocaleModifiers("");
     XSetErrorHandler((XErrorHandler) Xerror_handler);
@@ -536,7 +532,7 @@ Xerror_handler(Display * d, XErrorEvent * ev)
     char buf[256];
 
     ENTER;
-    XGetErrorText(GDK_DISPLAY(), ev->error_code, buf, 256);
+    XGetErrorText(gdk_x11_get_default_xdisplay(), ev->error_code, buf, 256);
     ERR( "fbxkb : X error: %s\n", buf);
     RET();
 }

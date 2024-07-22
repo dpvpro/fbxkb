@@ -16,8 +16,12 @@ endif
 endif
 
 CC = gcc
-LIBS = $(shell pkg-config --libs gtk+-2.0 gdk-pixbuf-2.0 gdk-pixbuf-xlib-2.0) -L/usr/X11R6/lib  -lXmu
-INCS = $(shell pkg-config --cflags gtk+-2.0 gdk-pixbuf-2.0 gdk-pixbuf-xlib-2.0)
+
+# gcc $(pkg-config --cflags gtk4) -o hello-world-gtk hello-world-gtk.c $(pkg-config --libs gtk4)
+#LIBS = $(shell pkg-config --libs gtk+-2.0 gdk-pixbuf-2.0 gdk-pixbuf-xlib-2.0) -lX11 -L/usr/X11R6/lib  -lXmu
+#INCS = $(shell pkg-config --cflags gtk+-2.0 gdk-pixbuf-2.0 gdk-pixbuf-xlib-2.0)
+LIBS = $(shell pkg-config --libs gtk+-3.0 gdk-pixbuf-2.0 gdk-pixbuf-xlib-2.0) -lX11 -L/usr/X11R6/lib  -lXmu
+INCS = $(shell pkg-config -cflags gtk+-3.0 gdk-pixbuf-2.0 gdk-pixbuf-xlib-2.0)
 CFLAGS = -O2    # overwriten by command line or env. variable
 CFLAGS += -Wall # always nice to have 
 ifneq (,$(DEVEL))
@@ -25,7 +29,7 @@ CFLAGS := -g -Wall
 endif
 
 # -DGTK_DISABLE_DEPRECATED does not work yet
-CFLAGS += -g -DG_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED
+# CFLAGS += -g -DG_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(INCS) -c $<

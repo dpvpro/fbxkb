@@ -10,8 +10,10 @@
 #ifndef __EGG_TRAY_ICON_H__
 #define __EGG_TRAY_ICON_H__
 
-#include <gtk/gtkplug.h>
+//#include <gtk/gtkplug.h>
 #include <gdk/gdkx.h>
+#include <gtk/gtkx.h>
+
 
 G_BEGIN_DECLS
 
