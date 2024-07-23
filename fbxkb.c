@@ -91,12 +91,13 @@ flag_menu_create()
     int i;
     GdkPixbuf *flag;
     GtkWidget *mi, *img;
+    GdkColor color;
     //static GString *s = NULL;;
 
     ENTER;
     flag_menu =  gtk_menu_new();
     for (i = 0; i < ngroups; i++) {
-        mi = gtk_image_menu_item_new_with_label(
+        mi = gtk_menu_item_new_with_label(
             group2info[i].name ? group2info[i].name : group2info[i].sym);
         g_signal_connect(G_OBJECT(mi), "activate", (GCallback)flag_menu_activated, GINT_TO_POINTER(i));
         gtk_menu_shell_append (GTK_MENU_SHELL (flag_menu), mi);
@@ -105,6 +106,9 @@ flag_menu_create()
         img = gtk_image_new_from_pixbuf(flag);
         gtk_widget_show(img);
         gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi), img);
+
+        gdk_color_parse ("black", &color);
+        gtk_widget_modify_bg (mi, GTK_STATE_FLAG_NORMAL, &color);
     }
     RET();
 }
@@ -177,8 +181,7 @@ app_menu_about(GtkWidget *widget, gpointer data)
 }
 
 
-static void
-app_menu_exit(GtkWidget *widget, gpointer data)
+static void app_menu_exit(GtkWidget *widget, gpointer data)
 {
     ENTER;
     exit(0);
@@ -223,8 +226,7 @@ void docklet_clicked(GtkWidget *button, GdkEventButton *event, void *data)
     RET();
 }
 
-static int
-docklet_create()
+static int docklet_create()
 {
     GtkWidget *box;
 
@@ -257,8 +259,7 @@ my_str_equal (gchar *a, gchar *b)
 }
 
 
-static GdkPixbuf *
-sym2flag(char *sym)
+static GdkPixbuf * sym2flag(char *sym)
 {
     GdkPixbuf *flag;
     static GString *s = NULL;
@@ -285,8 +286,7 @@ sym2flag(char *sym)
 }
 
 
-static void
-read_kbd_description()
+static void read_kbd_description()
 {
     unsigned int mask;
     XkbDescRec *kbd_desc_ptr;
