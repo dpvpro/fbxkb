@@ -85,8 +85,7 @@ static int create_all();
 /******************************************************************
  * gtk gui                                                        *
  ******************************************************************/
-static void
-flag_menu_create()
+static void flag_menu_create()
 {
     int i;
     GdkPixbuf *flag;
@@ -113,8 +112,7 @@ flag_menu_create()
     RET();
 }
 
-static void
-flag_menu_destroy()
+static void flag_menu_destroy()
 {
     if (flag_menu) {
         gtk_widget_destroy(flag_menu);
@@ -122,8 +120,7 @@ flag_menu_destroy()
     }
 }
 
-static void
-flag_menu_activated(GtkWidget *widget, gpointer data)
+static void flag_menu_activated(GtkWidget *widget, gpointer data)
 {
     int i;
 
@@ -134,8 +131,7 @@ flag_menu_activated(GtkWidget *widget, gpointer data)
     RET();
 }
 
-static void
-app_menu_create()
+static void app_menu_create()
 {
     GtkWidget *mi;
 
@@ -161,8 +157,7 @@ app_menu_create()
 
 }
 
-static void
-app_menu_about(GtkWidget *widget, gpointer data)
+static void app_menu_about(GtkWidget *widget, gpointer data)
 {
     ENTER;
     if (!about_dialog) {
@@ -252,8 +247,7 @@ static int docklet_create()
 /******************************************************************
  * internal state machine                                         *
  ******************************************************************/
-static gboolean
-my_str_equal (gchar *a, gchar *b)
+static gboolean my_str_equal (gchar *a, gchar *b)
 {
     return  (a[0] == b[0] && a[1] == b[1]);
 }
