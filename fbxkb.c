@@ -85,32 +85,47 @@ static int create_all();
 /******************************************************************
  * gtk gui                                                        *
  ******************************************************************/
-static void flag_menu_create()
-{
-    int i;
-    GdkPixbuf *flag;
-    GtkWidget *mi, *img;
-    GdkColor color;
-    //static GString *s = NULL;;
-
-    ENTER;
-    flag_menu =  gtk_menu_new();
-    for (i = 0; i < ngroups; i++) {
-        mi = gtk_menu_item_new_with_label(
-            group2info[i].name ? group2info[i].name : group2info[i].sym);
-        g_signal_connect(G_OBJECT(mi), "activate", (GCallback)flag_menu_activated, GINT_TO_POINTER(i));
-        gtk_menu_shell_append (GTK_MENU_SHELL (flag_menu), mi);
-        gtk_widget_show (mi);
-        flag = sym2flag(group2info[i].sym);
-        img = gtk_image_new_from_pixbuf(flag);
-        gtk_widget_show(img);
-        gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(mi), img);
-
-        gdk_color_parse ("black", &color);
-        gtk_widget_modify_bg (mi, GTK_STATE_FLAG_NORMAL, &color);
-    }
-    RET();
-}
+ static void flag_menu_create()
+ {
+     int i;
+     GdkPixbuf *flag;
+     GtkWidget *mi, *img, *box, *label;
+     GdkRGBA color;
+ 
+     ENTER;
+     flag_menu = gtk_menu_new();
+     for (i = 0; i < ngroups; i++) {
+         // Создание пункта меню
+         mi = gtk_menu_item_new();
+         gtk_menu_shell_append(GTK_MENU_SHELL(flag_menu), mi);
+ 
+         // Создание контейнера с изображением и текстом
+         box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
+         gtk_container_add(GTK_CONTAINER(mi), box);
+ 
+         // Добавление изображения
+         flag = sym2flag(group2info[i].sym);
+         img = gtk_image_new_from_pixbuf(flag);
+         gtk_box_pack_start(GTK_BOX(box), img, FALSE, FALSE, 0);
+         gtk_widget_show(img);
+ 
+         // Добавление текста
+         const char *label_text = group2info[i].name ? group2info[i].name : group2info[i].sym;
+         label = gtk_label_new(label_text);
+         gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
+         gtk_widget_show(label);
+ 
+         // Подключение сигнала
+         g_signal_connect(G_OBJECT(mi), "activate", (GCallback)flag_menu_activated, GINT_TO_POINTER(i));
+ 
+         // Установка фона
+         gdk_rgba_parse(&color, "black");
+         gtk_widget_override_background_color(mi, GTK_STATE_FLAG_NORMAL, &color);
+ 
+         gtk_widget_show(mi);
+     }
+     RET();
+ }
 
 static void flag_menu_destroy()
 {
