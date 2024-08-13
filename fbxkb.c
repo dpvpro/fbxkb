@@ -91,37 +91,37 @@ static int create_all();
      GdkPixbuf *flag;
      GtkWidget *mi, *img, *box, *label;
      GdkRGBA color;
- 
+
      ENTER;
      flag_menu = gtk_menu_new();
      for (i = 0; i < ngroups; i++) {
          // Создание пункта меню
          mi = gtk_menu_item_new();
          gtk_menu_shell_append(GTK_MENU_SHELL(flag_menu), mi);
- 
+
          // Создание контейнера с изображением и текстом
          box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
          gtk_container_add(GTK_CONTAINER(mi), box);
- 
+
          // Добавление изображения
          flag = sym2flag(group2info[i].sym);
          img = gtk_image_new_from_pixbuf(flag);
          gtk_box_pack_start(GTK_BOX(box), img, FALSE, FALSE, 0);
          gtk_widget_show(img);
- 
+
          // Добавление текста
          const char *label_text = group2info[i].name ? group2info[i].name : group2info[i].sym;
          label = gtk_label_new(label_text);
          gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
          gtk_widget_show(label);
- 
+
          // Подключение сигнала
          g_signal_connect(G_OBJECT(mi), "activate", (GCallback)flag_menu_activated, GINT_TO_POINTER(i));
- 
+
          // Установка фона
          gdk_rgba_parse(&color, "black");
          gtk_widget_override_background_color(mi, GTK_STATE_FLAG_NORMAL, &color);
- 
+
          gtk_widget_show(mi);
      }
      RET();
@@ -148,28 +148,41 @@ static void flag_menu_activated(GtkWidget *widget, gpointer data)
 
 static void app_menu_create()
 {
-    GtkWidget *mi;
+    GtkWidget *mi, *box, *img, *label;
 
     ENTER;
-    app_menu =  gtk_menu_new();
+    app_menu = gtk_menu_new();
 
-    mi = gtk_image_menu_item_new_from_stock(GTK_STOCK_DIALOG_INFO, NULL);
-    g_signal_connect(G_OBJECT(mi), "activate", (GCallback)app_menu_about, NULL);
-    gtk_menu_shell_append (GTK_MENU_SHELL (app_menu), mi);
-    gtk_widget_show (mi);
+    // Создание пункта меню "О программе"
+    mi = gtk_menu_item_new();
+    box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
+    img = gtk_image_new_from_icon_name("dialog-information", GTK_ICON_SIZE_MENU);
+    label = gtk_label_new("About");
+    gtk_box_pack_start(GTK_BOX(box), img, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
+    gtk_container_add(GTK_CONTAINER(mi), box);
+    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(app_menu_about), NULL);
+    gtk_menu_shell_append(GTK_MENU_SHELL(app_menu), mi);
+    gtk_widget_show_all(mi);
 
+    // Разделитель
+    mi = gtk_separator_menu_item_new();
+    gtk_menu_shell_append(GTK_MENU_SHELL(app_menu), mi);
+    gtk_widget_show(mi);
 
-    mi = gtk_menu_item_new ();
-    gtk_widget_show (mi);
-    gtk_menu_shell_append (GTK_MENU_SHELL (app_menu), mi);
-    gtk_widget_set_sensitive (mi, FALSE);
+    // Создание пункта меню "Выход"
+    mi = gtk_menu_item_new();
+    box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
+    img = gtk_image_new_from_icon_name("application-exit", GTK_ICON_SIZE_MENU);
+    label = gtk_label_new("Quit");
+    gtk_box_pack_start(GTK_BOX(box), img, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(box), label, FALSE, FALSE, 0);
+    gtk_container_add(GTK_CONTAINER(mi), box);
+    g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(app_menu_exit), NULL);
+    gtk_menu_shell_append(GTK_MENU_SHELL(app_menu), mi);
+    gtk_widget_show_all(mi);
 
-    mi = gtk_image_menu_item_new_from_stock(GTK_STOCK_QUIT, NULL);
-    g_signal_connect(G_OBJECT(mi), "activate", (GCallback)app_menu_exit, NULL);
-    gtk_menu_shell_append (GTK_MENU_SHELL (app_menu), mi);
-    gtk_widget_show (mi);
     RET();
-
 }
 
 static void app_menu_about(GtkWidget *widget, gpointer data)
@@ -217,21 +230,18 @@ static void docklet_destroyed(GtkWidget *widget, void *data)
 
 void docklet_clicked(GtkWidget *button, GdkEventButton *event, void *data)
 {
-    //GtkWidget *menu;
     ENTER;
     if (event->type != GDK_BUTTON_PRESS)
         RET();
 
     if (event->button == 1) {
-        int no;
-
-        no =  (cur_group + 1) % ngroups;
+        int no = (cur_group + 1) % ngroups;
         DBG("no=%d\n", no);
         XkbLockGroup(dpy, XkbUseCoreKbd, no);
     } else if (event->button == 2) {
-        gtk_menu_popup(GTK_MENU(flag_menu), NULL, NULL, NULL, NULL, event->button, event->time);
+        gtk_menu_popup_at_pointer(GTK_MENU(flag_menu), (const GdkEvent *) event);
     } else if (event->button == 3) {
-        gtk_menu_popup(GTK_MENU(app_menu), NULL, NULL, NULL, NULL, event->button, event->time);
+        gtk_menu_popup_at_pointer(GTK_MENU(app_menu), (const GdkEvent *) event);
     }
     RET();
 }
